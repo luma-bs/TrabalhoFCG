@@ -422,7 +422,8 @@ int main(int argc, char* argv[])
         // Desenhamos o plano da parede lateral direita
         model = Matrix_Translate(4.0f,0.0f,0.0f)
                 * Matrix_Scale(1.0f, 1.0f, 1.9f)
-                * Matrix_Rotate_X(1.5f);
+                * Matrix_Rotate_X(1.6f)
+                * Matrix_Rotate_Z(1.55f);
         glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(object_id_uniform, WALL);
         DrawVirtualObject("plane");
