@@ -21,6 +21,8 @@ uniform mat4 projection;
 // Identificador que define qual objeto está sendo desenhado no momento
 #define FLOOR 0
 #define WALL  1
+#define BED   2
+#define CUSHION 3
 
 uniform int object_id;
 
@@ -31,6 +33,7 @@ uniform vec4 bbox_max;
 // Variáveis para acesso das imagens de textura
 uniform sampler2D TextureImage0;
 uniform sampler2D TextureImage1;
+uniform sampler2D TextureImage2;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec3 color;
@@ -68,7 +71,7 @@ void main()
     float V = 0.0;
     vec3 Kd0;
 
-    if ( object_id == FLOOR || object_id == WALL)
+    if ( object_id == FLOOR || object_id == WALL || object_id == BED || object_id == CUSHION)
     {
         // Coordenadas de textura do plano, obtidas do arquivo OBJ.
         U = texcoords.x;
@@ -77,10 +80,17 @@ void main()
         if ( object_id == FLOOR ){
            Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
         }
-        else{
+        else if (object_id == WALL){
+            Kd0 = texture(TextureImage1, vec2(U,V)).rgb;
+        }
+        else if (object_id == BED) {
+            Kd0 = texture(TextureImage2, vec2(U,V)).rgb;
+        }
+        else {
             Kd0 = texture(TextureImage1, vec2(U,V)).rgb;
         }
     }
+
 
     // Equação de Iluminação
     float lambert = max(0,dot(n,l));

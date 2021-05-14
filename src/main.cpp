@@ -269,14 +269,30 @@ int main(int argc, char* argv[])
     LoadShadersFromFiles();
 
     // Carregamos duas imagens para serem utilizadas como textura
-    LoadTextureImage("../../data/wood.jpg");      // TextureImage0
-    LoadTextureImage("../../data/cinza.jpg");      // TextureImage0
+    LoadTextureImage("../../data/textures/wood.jpg");      // TextureImage0
+    LoadTextureImage("../../data/textures/cinza.jpg");      // TextureImage1
+    LoadTextureImage("../../data/textures/Wood1_Albedo.png");      // TextureImage2
+    LoadTextureImage("../../data/textures/Wood1_Metallic.png");      // TextureImage3
+    LoadTextureImage("../../data/textures/Wood1_Normal.png");      // TextureImage4
+    LoadTextureImage("../../data/textures/Wood1_Roughness.png");      // TextureImage5
 
-    //ObjModel bedmodel("../../data/couch.obj");
-    //ComputeNormals(&bedmodel);
-    //BuildTrianglesAndAddToVirtualScene(&bedmodel);
+    ObjModel armchairmodel("../../data/obj/ArmChair2.obj");
+    ComputeNormals(&armchairmodel);
+    BuildTrianglesAndAddToVirtualScene(&armchairmodel);
 
-    ObjModel planemodel("../../data/plane.obj");
+    ObjModel sofamodel("../../data/obj/Sofa1.obj");
+    ComputeNormals(&sofamodel);
+    BuildTrianglesAndAddToVirtualScene(&sofamodel);
+
+    ObjModel coffeetablemodel("../../data/obj/CoffeeTable6.obj");
+    ComputeNormals(&coffeetablemodel);
+    BuildTrianglesAndAddToVirtualScene(&coffeetablemodel);
+
+    ObjModel tvunitmodel("../../data/obj/TVUnit3.obj");
+    ComputeNormals(&tvunitmodel);
+    BuildTrianglesAndAddToVirtualScene(&tvunitmodel);
+
+    ObjModel planemodel("../../data/obj/plane.obj");
     ComputeNormals(&planemodel);
     BuildTrianglesAndAddToVirtualScene(&planemodel);
 
@@ -383,6 +399,10 @@ int main(int argc, char* argv[])
 
         #define FLOOR 0
         #define WALL  1
+        #define ARMCHAIR 2
+        #define SOFA 3
+        #define COFFEE_TABLE 4
+        #define TV_UNIT 5
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.0f,0.0f)
@@ -400,10 +420,9 @@ int main(int argc, char* argv[])
         DrawVirtualObject("plane");
 
         // Desenhamos o plano da parede lateral direita
-        model = Matrix_Translate(3.0f,0.0f,0.0f)
+        model = Matrix_Translate(4.0f,0.0f,0.0f)
                 * Matrix_Scale(1.0f, 1.0f, 1.9f)
-                * Matrix_Rotate_X(1.5f)
-                * Matrix_Rotate_Z(1.5f);
+                * Matrix_Rotate_X(1.5f);
         glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(object_id_uniform, WALL);
         DrawVirtualObject("plane");
@@ -412,10 +431,28 @@ int main(int argc, char* argv[])
         model = Matrix_Translate(-3.0f,0.0f,0.0f)
                 * Matrix_Scale(1.0f, 1.0f, 1.9f)
                 * Matrix_Rotate_X(1.55f)
-                * Matrix_Rotate_Z(1.5f);
+                * Matrix_Rotate_Z(2.0f);
         glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(object_id_uniform, WALL);
         DrawVirtualObject("plane");
+
+        model = Matrix_Translate(-2.2f,-1.0f,-0.8f);
+                glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
+                glUniform1i(object_id_uniform, ARMCHAIR);
+                DrawVirtualObject("ArmChair2_Cube");
+
+        model = Matrix_Translate(0.8f,-1.0f,-1.0f)
+                         * Matrix_Rotate_Y(-1.55f);
+               glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
+               glUniform1i(object_id_uniform, SOFA);
+               DrawVirtualObject("Sofa1_Cube");
+
+        model = Matrix_Translate(0.8f,-1.0f,0.7f)
+                         * Matrix_Rotate_Y(-1.55f);
+               glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
+               glUniform1i(object_id_uniform, COFFEE_TABLE);
+               DrawVirtualObject("CoffeeTable6_Cube");
+
 
         // Pegamos um vértice com coordenadas de modelo (0.5, 0.5, 0.5, 1) e o
         // passamos por todos os sistemas de coordenadas armazenados nas
