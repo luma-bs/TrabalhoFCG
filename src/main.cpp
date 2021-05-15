@@ -181,6 +181,12 @@ bool g_UsePerspectiveProjection = true;
 // Variável que controla se o texto informativo será mostrado na tela.
 bool g_ShowInfoText = true;
 
+//Variável que alterna entre câmera look-at e câmera livre
+bool g_FreeCamera = true;
+
+float w_Coefficient = 0.0f;
+float u_Coefficient = 0.0f;
+
 // Variáveis que definem um programa de GPU (shaders). Veja função LoadShadersFromFiles().
 GLuint vertex_shader_id;
 GLuint fragment_shader_id;
@@ -288,9 +294,13 @@ int main(int argc, char* argv[])
     ComputeNormals(&coffeetablemodel);
     BuildTrianglesAndAddToVirtualScene(&coffeetablemodel);
 
-    ObjModel tvunitmodel("../../data/obj/TVUnit3.obj");
-    ComputeNormals(&tvunitmodel);
-    BuildTrianglesAndAddToVirtualScene(&tvunitmodel);
+    ObjModel spinningchairmodel("../../data/obj/spinningchair.obj");
+    ComputeNormals(&spinningchairmodel);
+    BuildTrianglesAndAddToVirtualScene(&spinningchairmodel);
+
+    ObjModel nightstandmodel("../../data/obj/Nightstand.obj");
+    ComputeNormals(&nightstandmodel);
+    BuildTrianglesAndAddToVirtualScene(&nightstandmodel);
 
     ObjModel planemodel("../../data/obj/plane.obj");
     ComputeNormals(&planemodel);
@@ -351,10 +361,23 @@ int main(int argc, char* argv[])
 
         // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
         // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-        glm::vec4 camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera
-        glm::vec4 camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
-        glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
-        glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+        glm::vec4 camera_position_c; // Ponto "c", centro da câmera
+        glm::vec4 camera_lookat_l;    // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+        glm::vec4 camera_view_vector;  // Vetor "view", sentido para onde a câmera está virada
+        glm::vec4 camera_up_vector;   // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+
+        if(g_FreeCamera == false) {
+            camera_position_c  = glm::vec4(x,y,z,1.0f);
+            camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f);
+            camera_view_vector = camera_lookat_l - camera_position_c;
+            camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f);
+        } else {
+         camera_position_c = glm::vec4(2.0f, 2.0f, 2.0f, 1.0f);
+         camera_view_vector = glm::vec4(x, y, -1 * z, 1.0f) - camera_position_c;
+         camera_up_vector = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+
+         camera_position_c += w_Coefficient * (-camera_view_vector) + u_Coefficient * (crossproduct(camera_up_vector, -camera_view_vector));
+        }
 
         // Computamos a matriz "View" utilizando os parâmetros da câmera para
         // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
@@ -402,7 +425,8 @@ int main(int argc, char* argv[])
         #define ARMCHAIR 2
         #define SOFA 3
         #define COFFEE_TABLE 4
-        #define TV_UNIT 5
+        #define SPINNING_CHAIR 5
+        #define NIGHTSTAND 6
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.0f,0.0f)
@@ -437,12 +461,19 @@ int main(int argc, char* argv[])
         glUniform1i(object_id_uniform, WALL);
         DrawVirtualObject("plane");
 
-        model = Matrix_Translate(-2.2f,-1.0f,-0.8f);
+        model = Matrix_Translate(-2.2f,-1.0f,-0.9f);
                 glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
                 glUniform1i(object_id_uniform, ARMCHAIR);
                 DrawVirtualObject("ArmChair2_Cube");
 
-        model = Matrix_Translate(0.8f,-1.0f,-1.0f)
+        model = Matrix_Translate(3.0f,-1.0f,0.8f)
+                        * Matrix_Scale(1.8f, 1.8f, 1.8f)
+                        * Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * 0.1f);
+                        glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
+                        glUniform1i(object_id_uniform, SPINNING_CHAIR);
+                        DrawVirtualObject("Armchair_2_0_Armchair__2_0");
+
+        model = Matrix_Translate(0.5f,-1.0f,-1.0f)
                          * Matrix_Rotate_Y(-1.55f);
                glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
                glUniform1i(object_id_uniform, SOFA);
@@ -453,6 +484,13 @@ int main(int argc, char* argv[])
                glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
                glUniform1i(object_id_uniform, COFFEE_TABLE);
                DrawVirtualObject("CoffeeTable6_Cube");
+
+        model = Matrix_Translate(3.0f,-1.0f,-1.0f)
+                                 * Matrix_Scale(1.8f, 1.8f, 1.8f)
+                                 * Matrix_Rotate_Y(-1.55f);
+                       glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
+                       glUniform1i(object_id_uniform, COFFEE_TABLE);
+                       DrawVirtualObject("nightstand");
 
 
         // Pegamos um vértice com coordenadas de modelo (0.5, 0.5, 0.5, 1) e o
@@ -1249,6 +1287,38 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         fprintf(stdout,"Shaders recarregados!\n");
         fflush(stdout);
     }
+
+    if(key == GLFW_KEY_C && action == GLFW_PRESS) {
+        if(g_FreeCamera == true) {
+            g_FreeCamera = false;
+        } else {
+            g_FreeCamera = true;
+        }
+    }
+
+    //Para o usuário movimentar a câmera livre
+    if(g_FreeCamera == true){
+        if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT))
+            {
+                w_Coefficient += -0.005f;
+            }
+
+            if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT))
+            {
+                w_Coefficient += 0.005f;
+            }
+
+            if (key == GLFW_KEY_D && (action == GLFW_PRESS|| action == GLFW_REPEAT))
+            {
+                u_Coefficient += 0.005f;
+            }
+
+            if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
+            {
+                u_Coefficient += -0.005f;
+            }
+    }
+
 }
 
 // Definimos o callback para impressão de erros da GLFW no terminal
