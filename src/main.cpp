@@ -279,8 +279,8 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/textures/cinza.jpg");      // TextureImage1
     LoadTextureImage("../../data/textures/Wood1_Albedo.png");      // TextureImage2
     LoadTextureImage("../../data/textures/Wood1_Metallic.png");      // TextureImage3
-    LoadTextureImage("../../data/textures/Wood1_Normal.png");      // TextureImage4
-    LoadTextureImage("../../data/textures/Wood1_Roughness.png");      // TextureImage5
+    LoadTextureImage("../../data/textures/Wood1_Roughness.png");      // TextureImage4
+    LoadTextureImage("../../data/textures/spinning.png");      // TextureImage5
 
     ObjModel armchairmodel("../../data/obj/ArmChair2.obj");
     ComputeNormals(&armchairmodel);
@@ -486,10 +486,9 @@ int main(int argc, char* argv[])
                DrawVirtualObject("CoffeeTable6_Cube");
 
         model = Matrix_Translate(3.0f,-1.0f,-1.0f)
-                                 * Matrix_Scale(1.8f, 1.8f, 1.8f)
-                                 * Matrix_Rotate_Y(-1.55f);
+                                 * Matrix_Scale(1.8f, 1.8f, 1.8f);
                        glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
-                       glUniform1i(object_id_uniform, COFFEE_TABLE);
+                       glUniform1i(object_id_uniform, NIGHTSTAND);
                        DrawVirtualObject("nightstand");
 
 
@@ -666,6 +665,9 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(program_id, "TextureImage0"), 0);
     glUniform1i(glGetUniformLocation(program_id, "TextureImage1"), 1);
     glUniform1i(glGetUniformLocation(program_id, "TextureImage2"), 2);
+    glUniform1i(glGetUniformLocation(program_id, "TextureImage3"), 3);
+    glUniform1i(glGetUniformLocation(program_id, "TextureImage4"), 4);
+    glUniform1i(glGetUniformLocation(program_id, "TextureImage5"), 5);
     glUseProgram(0);
 }
 
