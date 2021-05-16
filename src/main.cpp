@@ -585,7 +585,7 @@ void CreateFurniture(){
     spinning_chair.scale_y = 1.8f;
     spinning_chair.scale_z = 1.8f;
     spinning_chair.rotate_x = 0.0f;
-    spinning_chair.rotate_y = g_AngleY + ((float)glfwGetTime() * 0.1f);
+    spinning_chair.rotate_y = g_AngleY + ((float)glfwGetTime() * 0.08f);
     spinning_chair.rotate_z = 0.0f;
     spinning_chair.object = "Armchair_2_0_Armchair__2_0";
     spinning_chair.type = SPINNING_CHAIR;

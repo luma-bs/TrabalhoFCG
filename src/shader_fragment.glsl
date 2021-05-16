@@ -72,10 +72,14 @@ void main()
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
 
+    vec4 h = normalize(v + l);
+
     // Coordenadas de textura U e V
     float U = 0.0;
     float V = 0.0;
     vec3 Kd0;
+    vec3 Ks;
+    float q;
 
     if ( object_id == FLOOR || object_id == WALL)
     {
@@ -85,9 +89,13 @@ void main()
 
         if ( object_id == FLOOR ){
            Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
+           Ks = vec3(0.1, 0.1, 0.1);
+            q = 1.0;
         }
         else{
             Kd0 = texture(TextureImage1, vec2(U,V)).rgb;
+            Ks = vec3(0.3, 0.3, 0.3);
+            q = 1.0;
         }
     }
     else{
@@ -100,6 +108,9 @@ void main()
 
         float minz = bbox_min.z;
         float maxz = bbox_max.z;
+
+        Ks = vec3(0.5, 0.5, 0.5);
+        q = 96.078431;
 
         U = (position_model.x - minx) / (maxx - minx);
         V = (position_model.y - miny) / (maxy - miny);
@@ -125,8 +136,14 @@ void main()
     // Equação de Iluminação
     float lambert = max(0,dot(n,l));
 
-    color = Kd0 * (lambert + 0.01);
+    vec3 blinn_phong = Ks*pow(dot(n, h), q);
 
+    if(object_id == SOFA) {
+        color = Kd0 * (lambert + 0.01) + blinn_phong;
+    }
+    else {
+        color = Kd0 * (lambert + 0.01);
+    }
     // Cor final com correção gamma, considerando monitor sRGB.
     // Veja https://en.wikipedia.org/w/index.php?title=Gamma_correction&oldid=751281772#Windows.2C_Mac.2C_sRGB_and_TV.2Fvideo_standard_gammas
     color = pow(color, vec3(1.0,1.0,1.0)/2.2);
