@@ -592,6 +592,21 @@ void CreateFurniture(){
 
     furnitures.push_back(spinning_chair);
 
+    Furniture spinning_chair_2;
+        spinning_chair_2.x = -3.2f;
+        spinning_chair_2.y = -1.0f;
+        spinning_chair_2.z = 0.8f;
+        spinning_chair_2.scale_x = 1.8f;
+        spinning_chair_2.scale_y = 1.8f;
+        spinning_chair_2.scale_z = 1.8f;
+        spinning_chair_2.rotate_x = 0.0f;
+        spinning_chair_2.rotate_y = 1.5f;
+        spinning_chair_2.rotate_z = 0.0f;
+        spinning_chair_2.object = "Armchair_2_0_Armchair__2_0";
+        spinning_chair_2.type = SPINNING_CHAIR;
+
+        furnitures.push_back(spinning_chair_2);
+
     Furniture sofa;
     sofa.x = 0.5f;
     sofa.y = -1.0f;
