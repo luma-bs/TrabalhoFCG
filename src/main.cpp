@@ -201,6 +201,24 @@ GLint bbox_max_uniform;
 // Número de texturas carregadas pela função LoadTextureImage()
 GLuint g_NumLoadedTextures = 0;
 
+/**Estrutura de furniture**/
+struct Furniture{
+    float x;
+	float y;
+	float z;
+    float scale_x;
+	float scale_y;
+	float scale_z;
+	float rotate_x;
+	float rotate_y;
+	float rotate_z;
+	char* object;
+	int type;
+};
+
+std::vector<Furniture> furnitures;
+void CreateFurniture();
+
 int main(int argc, char* argv[])
 {
     // Inicializamos a biblioteca GLFW, utilizada para criar uma janela do
@@ -428,69 +446,18 @@ int main(int argc, char* argv[])
         #define SPINNING_CHAIR 5
         #define NIGHTSTAND 6
 
-        // Desenhamos o plano do chão
-        model = Matrix_Translate(0.0f,-1.0f,0.0f)
-                * Matrix_Scale(4.0f, 2.0f, 2.0f);
-        glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(object_id_uniform, FLOOR);
-        DrawVirtualObject("plane");
+        CreateFurniture();
 
-        // Desenhamos o plano da parede frontal
-        model = Matrix_Translate(0.0f,0.0f,-2.0f)
-                * Matrix_Scale(4.0f, 1.0f, 1.0f)
-                * Matrix_Rotate_X(1.5f);
-        glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(object_id_uniform, WALL);
-        DrawVirtualObject("plane");
-
-        // Desenhamos o plano da parede lateral direita
-        model = Matrix_Translate(4.0f,0.0f,0.0f)
-                * Matrix_Scale(1.0f, 1.0f, 1.9f)
-                * Matrix_Rotate_X(1.6f)
-                * Matrix_Rotate_Z(1.55f);
-        glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(object_id_uniform, WALL);
-        DrawVirtualObject("plane");
-
-        // Desenhamos o plano da parede lateral esquerda
-        model = Matrix_Translate(-3.0f,0.0f,0.0f)
-                * Matrix_Scale(1.0f, 1.0f, 1.9f)
-                * Matrix_Rotate_X(1.55f)
-                * Matrix_Rotate_Z(2.0f);
-        glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(object_id_uniform, WALL);
-        DrawVirtualObject("plane");
-
-        model = Matrix_Translate(-2.2f,-1.0f,-0.9f);
-                glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
-                glUniform1i(object_id_uniform, ARMCHAIR);
-                DrawVirtualObject("ArmChair2_Cube");
-
-        model = Matrix_Translate(3.0f,-1.0f,0.8f)
-                        * Matrix_Scale(1.8f, 1.8f, 1.8f)
-                        * Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * 0.1f);
-                        glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
-                        glUniform1i(object_id_uniform, SPINNING_CHAIR);
-                        DrawVirtualObject("Armchair_2_0_Armchair__2_0");
-
-        model = Matrix_Translate(0.5f,-1.0f,-1.0f)
-                         * Matrix_Rotate_Y(-1.55f);
-               glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
-               glUniform1i(object_id_uniform, SOFA);
-               DrawVirtualObject("Sofa1_Cube");
-
-        model = Matrix_Translate(0.8f,-1.0f,0.7f)
-                         * Matrix_Rotate_Y(-1.55f);
-               glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
-               glUniform1i(object_id_uniform, COFFEE_TABLE);
-               DrawVirtualObject("CoffeeTable6_Cube");
-
-        model = Matrix_Translate(3.0f,-1.0f,-1.0f)
-                                 * Matrix_Scale(1.8f, 1.8f, 1.8f);
-                       glUniformMatrix4fv(model_uniform, 1 , GL_FALSE, glm::value_ptr(model));
-                       glUniform1i(object_id_uniform, NIGHTSTAND);
-                       DrawVirtualObject("nightstand");
-
+        for(int i = 0; i< furnitures.size();i++){
+            model = Matrix_Translate(furnitures[i].x,furnitures[i].y,furnitures[i].z)
+                * Matrix_Scale(furnitures[i].scale_x, furnitures[i].scale_y, furnitures[i].scale_z)
+                * Matrix_Rotate_X(furnitures[i].rotate_x)
+                * Matrix_Rotate_Y(furnitures[i].rotate_y)
+                * Matrix_Rotate_Z(furnitures[i].rotate_z);
+            glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+            glUniform1i(object_id_uniform, furnitures[i].type);
+            DrawVirtualObject(furnitures[i].object);
+        }
 
         // Pegamos um vértice com coordenadas de modelo (0.5, 0.5, 0.5, 1) e o
         // passamos por todos os sistemas de coordenadas armazenados nas
@@ -530,6 +497,144 @@ int main(int argc, char* argv[])
 
     // Fim do programa
     return 0;
+}
+
+void CreateFurniture(){
+
+    Furniture floor;
+    floor.x = 0.0f;
+    floor.y = -1.0f;
+    floor.z = 0.0f;
+    floor.scale_x = 4.0f;
+    floor.scale_y = 2.0f;
+    floor.scale_z = 2.0f;
+    floor.rotate_x = 0.0f;
+    floor.rotate_y = 0.0f;
+    floor.rotate_z = 0.0f;
+    floor.object = "plane";
+    floor.type = FLOOR;
+
+    furnitures.push_back(floor);
+
+    Furniture wall1;
+    wall1.x = 0.0f;
+    wall1.y = 0.0f;
+    wall1.z = -2.0f;
+    wall1.scale_x = 4.0f;
+    wall1.scale_y = 1.0f;
+    wall1.scale_z = 1.0f;
+    wall1.rotate_x = 1.56f;
+    wall1.rotate_y = 0.0f;
+    wall1.rotate_z = 0.0f;
+    wall1.object = "plane";
+    wall1.type = WALL;
+
+    furnitures.push_back(wall1);
+
+    Furniture wall2;
+    wall2.x = 4.0f;
+    wall2.y = 0.0f;
+    wall2.z = 0.0f;
+    wall2.scale_x = 1.0f;
+    wall2.scale_y = 1.0f;
+    wall2.scale_z = 2.0f;
+    wall2.rotate_x = 1.56f;
+    wall2.rotate_y = 0.0f;
+    wall2.rotate_z = 1.56f;
+    wall2.object = "plane";
+    wall2.type = WALL;
+
+    furnitures.push_back(wall2);
+
+    Furniture wall3;
+    wall3.x = -4.0f;
+    wall3.y = 0.0f;
+    wall3.z = 0.0f;
+    wall3.scale_x = 1.0f;
+    wall3.scale_y = 1.0f;
+    wall3.scale_z = 2.0f;
+    wall3.rotate_x = 1.56f;
+    wall3.rotate_y = 0.0f;
+    wall3.rotate_z = 1.56f;
+    wall3.object = "plane";
+    wall3.type = WALL;
+
+    furnitures.push_back(wall3);
+
+    Furniture armchair;
+    armchair.x = -2.2f;
+    armchair.y = -1.0f;
+    armchair.z = -0.9f;
+    armchair.scale_x = 1.0f;
+    armchair.scale_y = 1.0f;
+    armchair.scale_z = 1.0f;
+    armchair.rotate_x = 0.0f;
+    armchair.rotate_y = 0.0f;
+    armchair.rotate_z = 0.0f;
+    armchair.object = "ArmChair2_Cube";
+    armchair.type = ARMCHAIR;
+
+    furnitures.push_back(armchair);
+
+    Furniture spinning_chair;
+    spinning_chair.x = 3.2f;
+    spinning_chair.y = -1.0f;
+    spinning_chair.z = 0.8f;
+    spinning_chair.scale_x = 1.8f;
+    spinning_chair.scale_y = 1.8f;
+    spinning_chair.scale_z = 1.8f;
+    spinning_chair.rotate_x = 0.0f;
+    spinning_chair.rotate_y = g_AngleY + ((float)glfwGetTime() * 0.1f);
+    spinning_chair.rotate_z = 0.0f;
+    spinning_chair.object = "Armchair_2_0_Armchair__2_0";
+    spinning_chair.type = SPINNING_CHAIR;
+
+    furnitures.push_back(spinning_chair);
+
+    Furniture sofa;
+    sofa.x = 0.5f;
+    sofa.y = -1.0f;
+    sofa.z = -1.0f;
+    sofa.scale_x = 1.0f;
+    sofa.scale_y = 1.0f;
+    sofa.scale_z = 1.0f;
+    sofa.rotate_x = 0.0f;
+    sofa.rotate_y = -1.55f;
+    sofa.rotate_z = 0.0f;
+    sofa.object = "Sofa1_Cube";
+    sofa.type = SOFA;
+
+    furnitures.push_back(sofa);
+
+    Furniture coffee_table;
+    coffee_table.x = 0.8f;
+    coffee_table.y = -1.0f;
+    coffee_table.z = 0.7f;
+    coffee_table.scale_x = 1.0f;
+    coffee_table.scale_y = 1.0f;
+    coffee_table.scale_z = 1.0f;
+    coffee_table.rotate_x = 0.0f;
+    coffee_table.rotate_y = -1.55f;
+    coffee_table.rotate_z = 0.0f;
+    coffee_table.object = "CoffeeTable6_Cube";
+    coffee_table.type = COFFEE_TABLE;
+
+    furnitures.push_back(coffee_table);
+
+    Furniture nightstand;
+    nightstand.x = 3.0f;
+    nightstand.y = -1.0f;
+    nightstand.z = -1.0f;
+    nightstand.scale_x = 1.8f;
+    nightstand.scale_y = 1.8f;
+    nightstand.scale_z = 1.8f;
+    nightstand.rotate_x = 0.0f;
+    nightstand.rotate_y = 0.0f;
+    nightstand.rotate_z = 0.0f;
+    nightstand.object = "nightstand";
+    nightstand.type = NIGHTSTAND;
+
+    furnitures.push_back(nightstand);
 }
 
 // Função que carrega uma imagem para ser utilizada como textura
@@ -1228,30 +1333,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
 
-    // O código abaixo implementa a seguinte lógica:
-    //   Se apertar tecla X       então g_AngleX += delta;
-    //   Se apertar tecla shift+X então g_AngleX -= delta;
-    //   Se apertar tecla Y       então g_AngleY += delta;
-    //   Se apertar tecla shift+Y então g_AngleY -= delta;
-    //   Se apertar tecla Z       então g_AngleZ += delta;
-    //   Se apertar tecla shift+Z então g_AngleZ -= delta;
-
-    float delta = 3.141592 / 16; // 22.5 graus, em radianos.
-
-    if (key == GLFW_KEY_X && action == GLFW_PRESS)
-    {
-        g_AngleX += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
-    }
-
-    if (key == GLFW_KEY_Y && action == GLFW_PRESS)
-    {
-        g_AngleY += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
-    }
-    if (key == GLFW_KEY_Z && action == GLFW_PRESS)
-    {
-        g_AngleZ += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
-    }
-
     // Se o usuário apertar a tecla espaço, resetamos os ângulos de Euler para zero.
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
     {
@@ -1296,6 +1377,22 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         } else {
             g_FreeCamera = true;
         }
+    }
+
+    if(key == GLFW_KEY_UP && action == GLFW_PRESS) {
+        printf("cima");
+    }
+
+    if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
+        printf("baixo");
+    }
+
+    if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+        printf("esquerda");
+    }
+
+    if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+        printf("direita");
     }
 
     //Para o usuário movimentar a câmera livre
