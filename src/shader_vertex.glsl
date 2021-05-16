@@ -1,45 +1,56 @@
 #version 330 core
 
-// Atributos de vértice recebidos como entrada ("in") pelo Vertex Shader.
-// Veja a função BuildTrianglesAndAddToVirtualScene() em "main.cpp".
+// Identificador que define qual objeto estÃ¡ sendo desenhado no momento
+#define COFFEE_TABLE 4
+
+// Atributos de vï¿½rtice recebidos como entrada ("in") pelo Vertex Shader.
+// Veja a funï¿½ï¿½o BuildTrianglesAndAddToVirtualScene() em "main.cpp".
 layout (location = 0) in vec4 model_coefficients;
 layout (location = 1) in vec4 normal_coefficients;
 layout (location = 2) in vec2 texture_coefficients;
 
-// Matrizes computadas no código C++ e enviadas para a GPU
+// Matrizes computadas no cï¿½digo C++ e enviadas para a GPU
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-// Atributos de vértice que serão gerados como saída ("out") pelo Vertex Shader.
-// ** Estes serão interpolados pelo rasterizador! ** gerando, assim, valores
-// para cada fragmento, os quais serão recebidos como entrada pelo Fragment
+uniform int object_id;
+uniform sampler2D TextureImage2;
+
+// ParÃ¢metros da axis-aligned bounding box (AABB) do modelo
+uniform vec4 bbox_min;
+uniform vec4 bbox_max;
+
+// Atributos de vï¿½rtice que serï¿½o gerados como saï¿½da ("out") pelo Vertex Shader.
+// ** Estes serï¿½o interpolados pelo rasterizador! ** gerando, assim, valores
+// para cada fragmento, os quais serï¿½o recebidos como entrada pelo Fragment
 // Shader. Veja o arquivo "shader_fragment.glsl".
 out vec4 position_world;
 out vec4 position_model;
 out vec4 normal;
 out vec2 texcoords;
+out vec3 cor_v;
 
 void main()
 {
-    // A variável gl_Position define a posição final de cada vértice
+    // A variï¿½vel gl_Position define a posiï¿½ï¿½o final de cada vï¿½rtice
     // OBRIGATORIAMENTE em "normalized device coordinates" (NDC), onde cada
-    // coeficiente estará entre -1 e 1 após divisão por w.
+    // coeficiente estarï¿½ entre -1 e 1 apï¿½s divisï¿½o por w.
     // Veja {+NDC2+}.
     //
-    // O código em "main.cpp" define os vértices dos modelos em coordenadas
+    // O cï¿½digo em "main.cpp" define os vï¿½rtices dos modelos em coordenadas
     // locais de cada modelo (array model_coefficients). Abaixo, utilizamos
-    // operações de modelagem, definição da câmera, e projeção, para computar
-    // as coordenadas finais em NDC (variável gl_Position). Após a execução
-    // deste Vertex Shader, a placa de vídeo (GPU) fará a divisão por W. Veja
+    // operaï¿½ï¿½es de modelagem, definiï¿½ï¿½o da cï¿½mera, e projeï¿½ï¿½o, para computar
+    // as coordenadas finais em NDC (variï¿½vel gl_Position). Apï¿½s a execuï¿½ï¿½o
+    // deste Vertex Shader, a placa de vï¿½deo (GPU) farï¿½ a divisï¿½o por W. Veja
     // slides 41-67 e 69-86 do documento Aula_09_Projecoes.pdf.
 
     gl_Position = projection * view * model * model_coefficients;
 
-    // Como as variáveis acima  (tipo vec4) são vetores com 4 coeficientes,
-    // também é possível acessar e modificar cada coeficiente de maneira
-    // independente. Esses são indexados pelos nomes x, y, z, e w (nessa
-    // ordem, isto é, 'x' é o primeiro coeficiente, 'y' é o segundo, ...):
+    // Como as variï¿½veis acima  (tipo vec4) sï¿½o vetores com 4 coeficientes,
+    // tambï¿½m ï¿½ possï¿½vel acessar e modificar cada coeficiente de maneira
+    // independente. Esses sï¿½o indexados pelos nomes x, y, z, e w (nessa
+    // ordem, isto ï¿½, 'x' ï¿½ o primeiro coeficiente, 'y' ï¿½ o segundo, ...):
     //
     //     gl_Position.x = model_coefficients.x;
     //     gl_Position.y = model_coefficients.y;
@@ -47,21 +58,72 @@ void main()
     //     gl_Position.w = model_coefficients.w;
     //
 
-    // Agora definimos outros atributos dos vértices que serão interpolados pelo
-    // rasterizador para gerar atributos únicos para cada fragmento gerado.
+    // Agora definimos outros atributos dos vï¿½rtices que serï¿½o interpolados pelo
+    // rasterizador para gerar atributos ï¿½nicos para cada fragmento gerado.
 
-    // Posição do vértice atual no sistema de coordenadas global (World).
+    // Posiï¿½ï¿½o do vï¿½rtice atual no sistema de coordenadas global (World).
     position_world = model * model_coefficients;
 
-    // Posição do vértice atual no sistema de coordenadas local do modelo.
+    // Posiï¿½ï¿½o do vï¿½rtice atual no sistema de coordenadas local do modelo.
     position_model = model_coefficients;
 
-    // Normal do vértice atual no sistema de coordenadas global (World).
+    // Normal do vï¿½rtice atual no sistema de coordenadas global (World).
     // Veja slides 123-151 do documento Aula_07_Transformacoes_Geometricas_3D.pdf.
     normal = inverse(transpose(model)) * normal_coefficients;
     normal.w = 0.0;
 
     // Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
     texcoords = texture_coefficients;
+
+    if(object_id == COFFEE_TABLE) {
+        // Obtemos a posiÃ§Ã£o da cÃ¢mera utilizando a inversa da matriz que define o
+        // sistema de coordenadas da cÃ¢mera.
+        vec4 origin = vec4(0.0, 0.0, 0.0, 1.0);
+        vec4 camera_position = inverse(view) * origin;
+
+        // O fragmento atual Ã© coberto por um ponto que percente Ã  superfÃ­cie de um
+        // dos objetos virtuais da cena. Este ponto, p, possui uma posiÃ§Ã£o no
+        // sistema de coordenadas global (World coordinates). Esta posiÃ§Ã£o Ã© obtida
+        // atravÃ©s da interpolaÃ§Ã£o, feita pelo rasterizador, da posiÃ§Ã£o de cada
+        // vÃ©rtice.
+        vec4 p = position_world;
+
+        // Normal do fragmento atual, interpolada pelo rasterizador a partir das
+        // normais de cada vÃ©rtice.
+        vec4 n = normalize(normal);
+
+        // Vetor que define o sentido da fonte de luz em relaÃ§Ã£o ao ponto atual.
+        vec4 l = normalize(vec4(1.0, 1.0, 0.0, 0.0));
+
+        // Vetor que define o sentido da cÃ¢mera em relaÃ§Ã£o ao ponto atual.
+        vec4 v = normalize(camera_position - p);
+
+        // Coordenadas de textura U e V
+        float U = 0.0;
+        float V = 0.0;
+        vec3 Kd0;
+
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+
+        U = (position_model.x - minx) / (maxx - minx);
+        V = (position_model.y - miny) / (maxy - miny);
+
+        Kd0 = texture(TextureImage2, vec2(U, V)).rgb;
+
+        // EquaÃ§Ã£o de IluminaÃ§Ã£o
+        float lambert = max(0, dot(n, l));
+
+        cor_v = Kd0 * (lambert + 0.01);
+
+        cor_v = pow(cor_v, vec3(1.0, 1.0, 1.0)/2.2);
+    }
+
 }
 
