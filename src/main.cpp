@@ -217,6 +217,7 @@ struct Furniture{
 };
 
 std::vector<Furniture> furnitures;
+int selected_furniture;
 void CreateFurniture();
 
 int main(int argc, char* argv[])
@@ -1379,20 +1380,24 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         }
     }
 
+    if(key == GLFW_KEY_K && action == GLFW_PRESS && g_LeftMouseButtonPressed) {
+        /**AQUI IMPLEMENTAR A SELEÇÃO DE UM MÓVEL**/
+    }
+
     if(key == GLFW_KEY_UP && action == GLFW_PRESS) {
-        printf("cima");
+        furnitures[4].z -= 1.0f;
     }
 
     if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
-        printf("baixo");
+        furnitures[4].z += 1.0f;
     }
 
     if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
-        printf("esquerda");
+        furnitures[4].x -= 1.0f;
     }
 
     if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-        printf("direita");
+        furnitures[4].x += 1.0f;
     }
 
     //Para o usuário movimentar a câmera livre
