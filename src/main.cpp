@@ -219,6 +219,7 @@ struct Furniture{
 std::vector<Furniture> furnitures;
 int selected_furniture;
 void CreateFurniture();
+void ShowMenu();
 
 int main(int argc, char* argv[])
 {
@@ -348,6 +349,9 @@ int main(int argc, char* argv[])
     glm::mat4 the_model;
     glm::mat4 the_view;
 
+
+    ShowMenu();
+
     // Ficamos em loop, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -448,13 +452,19 @@ int main(int argc, char* argv[])
         #define NIGHTSTAND 6
 
         CreateFurniture();
-
-        for(int i = 0; i< furnitures.size();i++){
-            model = Matrix_Translate(furnitures[i].x,furnitures[i].y,furnitures[i].z)
-                * Matrix_Scale(furnitures[i].scale_x, furnitures[i].scale_y, furnitures[i].scale_z)
-                * Matrix_Rotate_X(furnitures[i].rotate_x)
-                * Matrix_Rotate_Y(furnitures[i].rotate_y)
-                * Matrix_Rotate_Z(furnitures[i].rotate_z);
+        for(int i = 0; i< 9;i++){
+            if(furnitures[i].type == SPINNING_CHAIR){
+                model = Matrix_Translate(furnitures[i].x,furnitures[i].y,furnitures[i].z)
+                        * Matrix_Scale(furnitures[i].scale_x, furnitures[i].scale_y, furnitures[i].scale_z)
+                        * Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * furnitures[i].rotate_y);
+            }
+            else{
+                model = Matrix_Translate(furnitures[i].x,furnitures[i].y,furnitures[i].z)
+                    * Matrix_Scale(furnitures[i].scale_x, furnitures[i].scale_y, furnitures[i].scale_z)
+                    * Matrix_Rotate_X(furnitures[i].rotate_x)
+                    * Matrix_Rotate_Y(furnitures[i].rotate_y)
+                    * Matrix_Rotate_Z(furnitures[i].rotate_z);
+            }
             glUniformMatrix4fv(model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
             glUniform1i(object_id_uniform, furnitures[i].type);
             DrawVirtualObject(furnitures[i].object);
@@ -585,7 +595,7 @@ void CreateFurniture(){
     spinning_chair.scale_y = 1.8f;
     spinning_chair.scale_z = 1.8f;
     spinning_chair.rotate_x = 0.0f;
-    spinning_chair.rotate_y = g_AngleY + ((float)glfwGetTime() * 0.08f);
+    spinning_chair.rotate_y = 0.1f;
     spinning_chair.rotate_z = 0.0f;
     spinning_chair.object = "Armchair_2_0_Armchair__2_0";
     spinning_chair.type = SPINNING_CHAIR;
@@ -638,6 +648,14 @@ void CreateFurniture(){
     furnitures.push_back(nightstand);
 }
 
+void ShowMenu(){
+    printf("SELECT FURNITURE TO MOVE:\n");
+    printf("1-Sofa\n");
+    printf("2-Coffee Table\n");
+    printf("3-Spinning Chair\n");
+    printf("4-Arm Chair\n");
+    printf("5-Nightstand\n");
+}
 // Função que carrega uma imagem para ser utilizada como textura
 void LoadTextureImage(const char* filename)
 {
@@ -1282,6 +1300,9 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         // cursor como sendo a última posição conhecida do cursor.
         g_LastCursorPosX = xpos;
         g_LastCursorPosY = ypos;
+
+        printf("%f x %f y", xpos, ypos);
+        printf("aaaa\n", xpos, ypos);
     }
 
     if (g_MiddleMouseButtonPressed)
@@ -1378,10 +1399,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         } else {
             g_FreeCamera = true;
         }
-    }
-
-    if(key == GLFW_KEY_K && action == GLFW_PRESS && g_LeftMouseButtonPressed) {
-        /**AQUI IMPLEMENTAR A SELEÇÃO DE UM MÓVEL**/
     }
 
     if(key == GLFW_KEY_UP && action == GLFW_PRESS) {
