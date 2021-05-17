@@ -221,6 +221,7 @@ int selected_furniture;
 void CreateFurniture();
 void ShowMenu();
 int choice;
+Furniture temp;
 
 int main(int argc, char* argv[])
 {
@@ -656,6 +657,31 @@ void ShowMenu(){
     printf("3-Spinning Chair\n");
     printf("4-Arm Chair\n");
     printf("5-Nightstand\n");
+}
+
+bool VerifyLateralWallColision(Furniture furniture)
+{
+
+    for(int i = 2; i<4; i++){
+        float wallFirstZ = furnitures[i].z - furnitures[i].scale_x;
+        float wallLastZ = furnitures[i].z + furnitures[i].scale_x;
+        float epsilon = 0.5;
+
+        if((furniture.z >= wallFirstZ && furniture.z <= wallLastZ) && std::abs(furnitures[i].x - furniture.x) < epsilon)
+            return true;
+    }
+
+    return false;
+}
+bool VerifyFrontalWallColision(Furniture furniture)
+{
+    float wallFirstX = furnitures[1].x - furnitures[1].scale_x;
+    float wallLastX = furnitures[1].x + furnitures[1].scale_x;
+    float epsilon = 0.5;
+
+    if((furniture.x >= wallFirstX && furniture.x <= wallLastX)&& std::abs(furnitures[1].z - furniture.z) < epsilon)
+            return true;
+    return false;
 }
 // Função que carrega uma imagem para ser utilizada como textura
 void LoadTextureImage(const char* filename)
@@ -1301,9 +1327,6 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         // cursor como sendo a última posição conhecida do cursor.
         g_LastCursorPosX = xpos;
         g_LastCursorPosY = ypos;
-
-        printf("%f x %f y", xpos, ypos);
-        printf("aaaa\n", xpos, ypos);
     }
 
     if (g_MiddleMouseButtonPressed)
@@ -1403,7 +1426,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     }
 
     if(key == GLFW_KEY_1 && action == GLFW_PRESS) {
-        printf("okoko");
         choice = 6;
     }
 
@@ -1424,19 +1446,37 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     }
 
     if(key == GLFW_KEY_UP && action == GLFW_PRESS) {
-        furnitures[choice].z -= 1.0f;
+        temp = furnitures[choice];
+        temp.z -= 1.0f;
+        if(!VerifyFrontalWallColision(temp) && !VerifyLateralWallColision(temp)){
+            furnitures[choice].z -= 1.0f;
+        }
     }
 
     if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
-        furnitures[choice].z += 1.0f;
+        temp = furnitures[choice];
+        temp.z += 1.0f;
+        printf("%f x\n", temp.x);
+        printf("%f z\n", temp.z);
+        if(!VerifyFrontalWallColision(temp)  && !VerifyLateralWallColision(temp)){
+            furnitures[choice].z += 1.0f;
+        }
     }
 
     if(key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
-        furnitures[choice].x -= 1.0f;
+        temp = furnitures[choice];
+        temp.x -= 1.0f;
+        if(!VerifyLateralWallColision(temp)  && !VerifyFrontalWallColision(temp)){
+            furnitures[choice].x -= 1.0f;
+        }
     }
 
     if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-        furnitures[choice].x += 1.0f;
+        temp = furnitures[choice];
+        temp.x += 1.0f;
+        if(!VerifyLateralWallColision(temp) && !VerifyFrontalWallColision(temp)){
+            furnitures[choice].x += 1.0f;
+        }
     }
 
     //Para o usuário movimentar a câmera livre
