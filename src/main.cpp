@@ -1447,11 +1447,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     }
 
     if(key == GLFW_KEY_C && action == GLFW_PRESS) {
-        if(g_FreeCamera == true) {
-            g_FreeCamera = false;
-        } else {
-            g_FreeCamera = true;
-        }
+        g_FreeCamera = !g_FreeCamera;
     }
 
     if(key == GLFW_KEY_1 && action == GLFW_PRESS) {
