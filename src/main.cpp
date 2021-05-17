@@ -673,6 +673,7 @@ bool VerifyLateralWallColision(Furniture furniture)
 
     return false;
 }
+
 bool VerifyFrontalWallColision(Furniture furniture)
 {
     float wallFirstX = furnitures[1].x - furnitures[1].scale_x;
@@ -683,6 +684,34 @@ bool VerifyFrontalWallColision(Furniture furniture)
             return true;
     return false;
 }
+
+bool VerifyFurnitureColision(Furniture furniture)
+{
+    float furnitureFirstX = furniture.x - furniture.scale_x/2; // esq
+    float furnitureLastX = furniture.x + furniture.scale_x/2; // dir
+    float furnitureFirstZ = furniture.z - furniture.scale_z/2; // frente
+    float furnitureLastZ = furniture.z + furniture.scale_z/2; // costas
+
+    for(int i = 4; i<9; i++){
+        if(furniture.type != furnitures[i].type){
+            float objFirstX = furnitures[i].x - furnitures[i].scale_x/2; // esq
+            float objLastX = furnitures[i].x + furnitures[i].scale_x/2; // dir
+            float objFirstZ = furnitures[i].z - furnitures[i].scale_z/2; // frente
+            float objLastZ = furnitures[i].z + furnitures[i].scale_z/2; // costas
+
+            if (objFirstZ <= furnitureLastZ && objFirstZ <= furnitureFirstZ) {
+              if (objFirstX <= furnitureLastX && objFirstX >= furnitureFirstX)
+                return true;
+
+              if (objLastX <= furnitureLastX && furnitureLastX >= furnitureFirstX)
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 // Função que carrega uma imagem para ser utilizada como textura
 void LoadTextureImage(const char* filename)
 {
@@ -1456,8 +1485,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     if(key == GLFW_KEY_DOWN && action == GLFW_PRESS) {
         temp = furnitures[choice];
         temp.z += 1.0f;
-        printf("%f x\n", temp.x);
-        printf("%f z\n", temp.z);
         if(!VerifyFrontalWallColision(temp)  && !VerifyLateralWallColision(temp)){
             furnitures[choice].z += 1.0f;
         }
